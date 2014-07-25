@@ -64,14 +64,18 @@ public class FourSquareOper implements AccessTokenRequestListener
 
 	 public ArrayList<Venue> requestVenusNearby(double ltd, double lng)
 	 {
-		 Location loc = new Location("");
+		 	Location loc = new Location("");
 	        loc.setLatitude(ltd);
 	        loc.setLongitude(lng);
-	        ArrayList<Venue> venuesNearBy ;
+	        ArrayList<Venue> venuesNearBy =new ArrayList<Venue>();
+	        Venue tempVenue = new Venue();
+	        tempVenue.setName("NoVenues");
 	        VenuesCriteria criteria = new VenuesCriteria();
 	        criteria.setLocation(loc);
 	        venuesNearBy = sync.getVenuesNearby(criteria);
 	        System.out.println("# Venues= "+venuesNearBy.size());
+	        if(venuesNearBy.size() == 0)
+	        	venuesNearBy.add(tempVenue);
 	        return venuesNearBy;
 	 }
 	 

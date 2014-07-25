@@ -8,7 +8,9 @@ import waslny.task.dao.SqlHelper;
 import waslny.task.foursquareexplorer.FourSquareOper;
 import waslny.task.foursquareexplorer.R;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.location.Criteria;
@@ -16,6 +18,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.widget.Toast;
 import br.com.condesales.models.Venue;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -56,7 +59,7 @@ public class MainActivity extends Activity implements LocationListener
 	         if(!venuesObjs.get(0).getName().equals("empty"))
 	         {
 	        	 addMarkers(venuesObjs);
-	        	 System.out.println("IN IF COND");
+	        	 System.out.println("IN IF COND"+venuesObjs.size());
 	         }
 	        	         
 	         googleMap.setOnMarkerClickListener(new OnMarkerClickListener() 
@@ -116,25 +119,36 @@ public class MainActivity extends Activity implements LocationListener
 		crit.setAccuracy(Criteria.ACCURACY_FINE);
 		bestProvider = locationManager.getBestProvider(crit, false);
 		locationManager.requestLocationUpdates(bestProvider, 0, 1, this);
+	    
 	}
-	   
+	
 	@Override
 	public void onLocationChanged(Location location)
 	{
 		// TODO Auto-generated method stub
 		System.out.println("LAtttt="+location.getLatitude());
-		googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(29.9870274036, 31.28431474322), 17.0f));
+		googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 17.0f));
 		fsObj = new FourSquareOper(this);
-	    ArrayList<Venue> nearByVenues = fsObj.requestVenusNearby(29.9870274036, 31.28431474322);
-	    addMarkers(nearByVenues);
-	    dbObj.deleteCachedVenues();
-	    dbObj.cacheNewVenues(nearByVenues);
+	    ArrayList<Venue> nearByVenues = fsObj.requestVenusNearby(location.getLatitude(), location.getLongitude());
+	    googleMap.clear();
+	    if(nearByVenues.get(0).getName().equals("NoVenues"))
+	    {
+	    	Toast.makeText(this, "No nearby venues found!", Toast.LENGTH_LONG).show();
+	    	dbObj.deleteCachedVenues();
+	    }
+	    else
+	    {
+	    	//googleMap.clear();
+	    	addMarkers(nearByVenues);
+	    	dbObj.deleteCachedVenues();
+	    	dbObj.cacheNewVenues(nearByVenues);
+	    }
 	}
+	
 	@Override
 	public void onProviderDisabled(String provider) 
 	{
 		// TODO Auto-generated method stub
-		
 	}
 	@Override
 	public void onProviderEnabled(String provider) 
